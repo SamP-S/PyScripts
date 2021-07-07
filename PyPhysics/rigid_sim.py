@@ -51,7 +51,7 @@ class Rigid_Physics_Simulation:
 
     def __init__(self):
         self.world = []
-        self.scenario_billiard()
+        self.scenario_particles()
 
     def update(self, dt):
         # move circles
