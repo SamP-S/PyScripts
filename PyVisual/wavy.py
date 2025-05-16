@@ -1,8 +1,7 @@
 # dependancy modules
-import pygame
+import pygame as pg
 from pygame.locals import *
 # standard modules
-import timer
 import math
 
 # WINDOW SETTINGS
@@ -10,10 +9,10 @@ WIDTH = 720
 HEIGHT = 480
 PIXEL_SCALE = 200
 # DISPLAY SETTINGS
-BACKGROUND_COLOUR = pygame.Color(0, 0, 0)
+BACKGROUND_COLOUR = pg.Color(0, 0, 0)
 LINES_MAX = 1
 # LINE CONSTANTS
-LINE_COLOUR = pygame.Color(100, 100, 255)
+LINE_COLOUR = pg.Color(100, 100, 255)
 LINE_LEN = math.sqrt(WIDTH * HEIGHT)
 LINE_SIZE = 2
 # WAVE CONSTANTS
@@ -21,7 +20,7 @@ WAVE_RES = 200
 WAVE_FREQUENCY = 2
 WAVE_AMPLITUDE = 1
 WAVE_SPEED = 1
-WAVE_COLOUR = pygame.Color(255, 255, 255)
+WAVE_COLOUR = pg.Color(255, 255, 255)
 
 # window coordinate system class
 # put in window size and pixel scale
@@ -68,7 +67,7 @@ class line:
         self.size = size
     # draw function requires a surface to draw on
     def draw(self, surface):
-        pygame.draw.line(surface, self.colour, self.start, self.end, self.size)
+        pg.draw.line(surface, self.colour, self.start, self.end, self.size)
 
 # y = m * x + c
 # linear equation class for graph drawing
@@ -91,7 +90,7 @@ class linear_line:
         start = coord_system.graph_to_window(start_graph)
         end = coord_system.graph_to_window(end_graph)
         # pygame draw call
-        pygame.draw.line(surface, self.colour, start, end, self.size)
+        pg.draw.line(surface, self.colour, start, end, self.size)
 
 # sine wave class for drawing sine wave
 class sine:
@@ -118,16 +117,15 @@ class sine:
                 centre_x + pxl * (min_x), 
                 centre_y + pxl * (math.sin((min_x) * self.freq + offset) * self.amp)
             )
-            pygame.draw.aaline(surface, self.colour, start, end)
+            pg.draw.aaline(surface, self.colour, start, end)
 
 # pygame initialisation
-pygame.init()
-display = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Game")
+pg.init()
+display = pg.display.set_mode((WIDTH, HEIGHT))
+pg.display.set_caption("Game")
 
 # constant variables
 show_axis = False
-tmr = timer.timer()
 wave = sine(WAVE_COLOUR, WAVE_FREQUENCY, WAVE_AMPLITUDE)
 lines = []
 
@@ -142,14 +140,14 @@ axis_y = line((0, 255, 0), start, end, 1)
 # main loop
 while True:
     # checks for quit
-    for evt in pygame.event.get():
-        if evt.type == pygame.QUIT:
+    for evt in pg.event.get():
+        if evt.type == pg.QUIT:
             # exits
-            pygame.quit()
+            pg.quit()
             break
     
     # get time ellapsed since last frame
-    delta_time = tmr.get_time(False)
+    delta_time = pg.time.get_ticks() / 1000
     # y offset by trig function
     c_sin = math.sin(delta_time) * WAVE_AMPLITUDE
     c_cos = math.cos(delta_time) * WAVE_AMPLITUDE
@@ -174,4 +172,4 @@ while True:
     for l in lines:
         l.draw(display, coord_sys)
     # update display buffer
-    pygame.display.update()
+    pg.display.update()
