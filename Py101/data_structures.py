@@ -1,6 +1,14 @@
+# core data types
+a = 3		# integer
+b = 3.14	# float/double
+c = "pi"	# string
+d = True	# boolean
+
+# core data structures
+x = [1, 2, 3] 	# list
+y = {"name": "John", "age": 30}	# dictionary
 
 # basic get array functions
-
 def Get_1D_Array(size):
 	return [None for i in range(size)]
 
