@@ -11,9 +11,11 @@ class colour:
         self.b = b
         self.a = a
         self.__value = (self.r, self.g, self.b, self.a)
+        
     # returns tuple of rgb values
     def rgb(self):
         return (self.r, self.g, self.b)
+    
     # returns tuple of rgba values
     def rgba(self):
         return (self.r, self.g, self.b, self.a)
