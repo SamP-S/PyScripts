@@ -7,8 +7,11 @@ def main():
     
     # initalise
     pg.init()
-    window = pg.display.set_mode((800, 600))
+    WIDTH = 800
+    HEIGHT = 600
+    window = pg.display.set_mode((WIDTH, HEIGHT))
     pg.display.set_caption("Double Pendulum")
+    clock = pg.time.Clock()
 
     COLOURS = {
         "background": pg.Color(0, 0, 0),
@@ -23,31 +26,38 @@ def main():
     l = 100
     m = 10
     g = 9.81
-    ox = 100
-    oy = 100
+    ox = WIDTH // 2
+    oy = 3 * HEIGHT // 4
     
     # pendulum dynamic parameters
-    phi = pi / 4
-    d_phi = 0
+    phi = 0
+    d_phi = 2 * pi
     d2_phi = 0
     
     # # centre of mass arm 1
     # cm_x1 = 0.5 * l * sin(phi)
     # cm_y1 = -0.5 * l * cos(phi)
 
-    while True:
+    # main loop
+    quit_flag = False
+    while quit_flag == False:
+        dt = clock.tick(60) / 1000
+        print(pg.time.get_ticks() / 1000)
+        
+        # handle events
         for evt in pg.event.get():
             if evt.type == pg.QUIT:
-                break
+                quit_flag = True
 
         # calculate
+        phi += d_phi * dt
         x1 = ox + l * sin(phi)
         y1 = oy - l * cos(phi)
         
         # draw
         window.fill(COLOURS["background"])
+        pg.draw.line(window, COLOURS["secondary"], (ox, oy), (x1, y1), LIMB_WIDTH)
         pg.draw.circle(window, COLOURS["primary"], (ox, oy), JOINT_RADIUS)
-        pg.draw.line(window, (ox, oy), (x1, y1), COLOURS["secondary"], LIMB_WIDTH)
         pg.draw.circle(window, COLOURS["primary"], (x1, y1), JOINT_RADIUS)
 
         # swap display buffers
