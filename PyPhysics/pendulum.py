@@ -72,9 +72,9 @@ def main():
         
         # graphical coordinates
         gox = ox * M_PIXEL_SCALE
-        goy = oy * M_PIXEL_SCALE
+        goy = HEIGHT - oy * M_PIXEL_SCALE
         x1 = (ox + l * sin(tn[0])) * M_PIXEL_SCALE
-        y1 = (oy - l * cos(tn[0])) * M_PIXEL_SCALE
+        y1 = HEIGHT - (oy - l * cos(tn[0])) * M_PIXEL_SCALE
         
         # draw commands
         window.fill(COLOURS["background"])
