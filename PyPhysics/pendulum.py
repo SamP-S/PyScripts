@@ -2,6 +2,7 @@ from math import *
 import pygame as pg
 import numpy as np
 from copy import copy
+import matplotlib.pyplot as plt
 
 # DRAWING
 COLOURS = {
@@ -18,6 +19,8 @@ WIDTH = 800
 HEIGHT = 600
 # PHYSICS
 G = 9.81
+STEPS_PER_SECOND = 50
+TIMESTEPS = STEPS_PER_SECOND * 5
 
 # pendulum
 l = 1
@@ -35,13 +38,14 @@ def energy(tn):
     kinetic = 0.5 * m * (tn[1] * l) ** 2
     potential = m * G * l * (1 - cos(tn[0]))
     total = kinetic + potential
-    print(f"ke: {kinetic:.2f};\t pe: {potential:.2f};\t total: {total:.2f}")
-
+    # print(f"ke: {kinetic:.2f};\t pe: {potential:.2f};\t total: {total:.2f}")
+    return (kinetic, potential, total)
 
 def calc_step(dt, t0):
     d_theta = t0[1] + t0[2] * dt
     theta = t0[0] + d_theta * dt
     d2_theta = -G * sin(theta) 
+    print(f"theta: {theta:.2f};\t d theta: {d_theta:.2f};\t d2 theta: {d2_theta:.2f}")
     return (theta, d_theta, d2_theta)
     
 def main():    
@@ -51,15 +55,23 @@ def main():
     pg.display.set_caption("Double Pendulum")
     clock = pg.time.Clock()
     
-    t0 = (theta_0, 0.0, G * sin(theta_0))
+    t = []
+    e = []
+    x = []
+
     print("initial")
-    energy(t0)
+    x.append(0.0)
+    t0 = (theta_0, 0.0, G * sin(theta_0))
+    e0 = energy(t0)
+    t.append(t0)
+    e.append(e0)
     
     # main loop
     print("loop")
     quit_flag = False
-    while quit_flag == False:
-        dt = clock.tick(60) / 1000
+    i = 0
+    while quit_flag == False and i < TIMESTEPS:
+        dt = clock.tick(STEPS_PER_SECOND) / 1000
         
         # handle events
         for evt in pg.event.get():
@@ -68,7 +80,7 @@ def main():
 
         # calculate
         tn = calc_step(dt, t0)
-        energy(tn)
+        en = energy(tn)
         
         # graphical coordinates
         gox = ox * M_PIXEL_SCALE
@@ -84,10 +96,25 @@ def main():
 
         # swap display buffers
         pg.display.update()
+        x.append(pg.time.get_ticks() / 1000)
+        t.append(tn)
+        e.append(en)
         t0 = tn
+        i += 1
 
     # cleanup resources
     pg.quit()
+    
+    ke = [x[0] for x in e]
+    pe = [x[1] for x in e]
+    te = [x[2] for x in e]
+    plt.plot(x, ke, label="Kinetic Energy")
+    plt.plot(x, pe, label="Potential Energy")
+    plt.plot(x, te, label="Total Energy")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Energy (j)")
+    plt.title("Pendulum Energy")
+    plt.show()
 
 if __name__ == "__main__":
     main()
