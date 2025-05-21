@@ -1,8 +1,9 @@
 from math import *
 import pygame as pg
 import numpy as np
+from copy import copy
 
-G = 9.81
+# DRAWING
 COLOURS = {
     "background": pg.Color(0, 0, 0),
     "primary": pg.Color(127, 255, 127),
@@ -12,62 +13,53 @@ COLOURS = {
 JOINT_RADIUS = 5
 LIMB_WIDTH = 2
 M_PIXEL_SCALE = 100    
+# WINDOW
 WIDTH = 800
 HEIGHT = 600
+# PHYSICS
+G = 9.81
+
+# pendulum
+l = 1
+m = 10
+ox = 4
+oy = 4
+theta_0 = pi / 2
+
+# formulas
+# i = m * l**2              # moment of inertia
+# tau = f * sin(theta) * l  # torque
+
+def energy(tn):
+    # energy
+    kinetic = 0.5 * m * (tn[1] * l) ** 2
+    potential = m * G * l * (1 - cos(tn[0]))
+    total = kinetic + potential
+    print(f"ke: {kinetic:.2f};\t pe: {potential:.2f};\t total: {total:.2f}")
 
 
-class Pendulum:
+def calc_step(dt, t0):
+    d_theta = t0[1] + t0[2] * dt
+    theta = t0[0] + d_theta * dt
+    d2_theta = -G * sin(theta) 
+    return (theta, d_theta, d2_theta)
     
-    def __init__(self):
-        # static
-        self.l = 1
-        self.m = 10
-        self.ox = 4
-        self.oy = 4
-        
-        # dynamic
-        self.theta = pi / 2
-        self.f = self.m * G * sin(self.theta)
-        self.d_theta = 0.0
-        self.d2_theta = 0.0
-        
-    def energy(self):
-        # energy
-        kinetic = 0.5 * self.m * (self.d_theta * l) ** 2
-        potential = self.m * G * self.l * (1 - cos(self.theta))
-        total = kinetic + potential
-        print(f"ke: {kinetic};\t pe: {potential};\t total: {total}")
-
-
-def func(dt, t0, tn):
-    
-    ## calculate
-    # i = m * l**2            # moment of inertia
-    # tau = f * sin(theta) * l  # torque
-    
-    f = tn.m * G               # total linear force
-    f_perp = f * sin(theta)   # perpendicular
-    f_para = f * cos(theta)   # parallel
-    d2_theta = f_perp / m     # f = ma -> f/m = a
-    
-
-
 def main():    
     # initalise
     pg.init()
     window = pg.display.set_mode((WIDTH, HEIGHT))
     pg.display.set_caption("Double Pendulum")
     clock = pg.time.Clock()
-
-    t = []
-    t0 = Pendulum()
-    t.append(t0)
+    
+    t0 = (theta_0, 0.0, G * sin(theta_0))
+    print("initial")
+    energy(t0)
     
     # main loop
+    print("loop")
     quit_flag = False
     while quit_flag == False:
         dt = clock.tick(60) / 1000
-        print(pg.time.get_ticks() / 1000)
         
         # handle events
         for evt in pg.event.get():
@@ -75,17 +67,19 @@ def main():
                 quit_flag = True
 
         # calculate
-        tn = Pendulum()
-        func(dt, t0, tn)
+        tn = calc_step(dt, t0)
+        energy(tn)
         
         # graphical coordinates
-        x1 = (tn.ox + tn.l * sin(tn.theta)) * M_PIXEL_SCALE
-        y1 = (tn.oy - tn.l * cos(tn.theta)) * M_PIXEL_SCALE
+        gox = ox * M_PIXEL_SCALE
+        goy = oy * M_PIXEL_SCALE
+        x1 = (ox + l * sin(tn[0])) * M_PIXEL_SCALE
+        y1 = (oy - l * cos(tn[0])) * M_PIXEL_SCALE
         
         # draw commands
         window.fill(COLOURS["background"])
-        pg.draw.line(window, COLOURS["secondary"], (ox, oy), (x1, y1), LIMB_WIDTH)
-        pg.draw.circle(window, COLOURS["primary"], (ox, oy), JOINT_RADIUS)
+        pg.draw.line(window, COLOURS["secondary"], (gox, goy), (x1, y1), LIMB_WIDTH)
+        pg.draw.circle(window, COLOURS["primary"], (gox, goy), JOINT_RADIUS)
         pg.draw.circle(window, COLOURS["primary"], (x1, y1), JOINT_RADIUS)
 
         # swap display buffers
