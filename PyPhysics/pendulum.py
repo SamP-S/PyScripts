@@ -23,7 +23,7 @@ STEPS_PER_SECOND = 100
 TIMESTEPS = STEPS_PER_SECOND * 5
 
 # pendulum
-l = 1
+l = 1.5
 m = 1
 ox = 4
 oy = 4
@@ -44,7 +44,7 @@ def energy(tn):
 def calc_step(dt, t0):
     d_theta = t0[1] + t0[2] * dt
     theta = t0[0] + d_theta * dt
-    d2_theta = -G * sin(theta) 
+    d2_theta = -G * sin(theta) / l
     # print(f"theta: {theta:.2f};\t d theta: {d_theta:.2f};\t d2 theta: {d2_theta:.2f}")
     return (theta, d_theta, d2_theta)
     
@@ -61,7 +61,7 @@ def main():
 
     print("initial")
     x.append(0.0)
-    t0 = (theta_0, 0.0, -G * sin(theta_0))
+    t0 = (theta_0, 0.0, -G * sin(theta_0) / l)
     e0 = energy(t0)
     t.append(t0)
     e.append(e0)
