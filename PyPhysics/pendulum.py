@@ -19,12 +19,12 @@ WIDTH = 800
 HEIGHT = 600
 # PHYSICS
 G = 9.81
-STEPS_PER_SECOND = 50
+STEPS_PER_SECOND = 100
 TIMESTEPS = STEPS_PER_SECOND * 5
 
 # pendulum
 l = 1
-m = 10
+m = 1
 ox = 4
 oy = 4
 theta_0 = pi / 2
@@ -45,7 +45,7 @@ def calc_step(dt, t0):
     d_theta = t0[1] + t0[2] * dt
     theta = t0[0] + d_theta * dt
     d2_theta = -G * sin(theta) 
-    print(f"theta: {theta:.2f};\t d theta: {d_theta:.2f};\t d2 theta: {d2_theta:.2f}")
+    # print(f"theta: {theta:.2f};\t d theta: {d_theta:.2f};\t d2 theta: {d2_theta:.2f}")
     return (theta, d_theta, d2_theta)
     
 def main():    
@@ -105,10 +105,17 @@ def main():
     # cleanup resources
     pg.quit()
     
+    def print_stats(name, series):
+        print(f"{name}: min={np.min(series):.2f};\t avg={np.mean(series):.2f};\t max={np.max(series)}")
+    
+    # numpy the data
+    theta, d_theta, d2_theta = np.array(t).T
+    ke, pe, te = np.array(e).T
+    print_stats("ke", ke)
+    print_stats("pe", pe)
+    print_stats("te", te)
+    
     # energy graph
-    ke = [x[0] for x in e]
-    pe = [x[1] for x in e]
-    te = [x[2] for x in e]
     plt.plot(x, ke, label="Kinetic Energy")
     plt.plot(x, pe, label="Potential Energy")
     plt.plot(x, te, label="Total Energy")
@@ -119,38 +126,34 @@ def main():
     plt.show()
     
     # angular graph
-    theta = [x[0] for x in t]
-    d_theta = [x[1] for x in t]
-    d2_theta = [x[2] for x in t]
-    plt.plot(x, theta, label="Theta")
-    plt.plot(x, d_theta, label="d Theta")
-    plt.plot(x, d2_theta, label="d2 Theta")
-    plt.xlabel("Time (s)")
-    plt.ylabel("Value")
-    plt.title("Pendulum Angular")
-    plt.legend()
-    plt.show()
+    # plt.plot(x, theta, label="Theta")
+    # plt.plot(x, d_theta, label="d Theta")
+    # plt.plot(x, d2_theta, label="d2 Theta")
+    # plt.xlabel("Time (s)")
+    # plt.ylabel("Value")
+    # plt.title("Pendulum Angular")
+    # plt.legend()
+    # plt.show()
     
-    # combined graph
-    fig, ax1 = plt.subplots()
-    ax1.set_xlabel("Time (s)")
-    ax1.set_ylabel("Energy (j)")
-    ax1.plot(x, ke, label="Kinetic Energy", linestyle="--")
-    ax1.plot(x, pe, label="Potential Energy", linestyle="--")
-    ax1.plot(x, te, label="Total Energy", linestyle="--")
-    ax1.tick_params(axis="y")
-    ax1.legend(loc="upper left")
-    ax2 = ax1.twinx()
-    ax2.set_ylabel("Angular Values")
-    ax2.plot(x, theta, label="Theta")
-    ax2.plot(x, d_theta, label="d Theta")
-    ax2.plot(x, d2_theta, label="d2 Theta")
-    ax2.tick_params(axis="y")
-    ax2.legend(loc="upper right")
-
-    plt.title("Combined Pendulum Graph")
-    fig.tight_layout()
-    plt.show()
+    # # combined graph
+    # fig, ax1 = plt.subplots()
+    # ax1.set_xlabel("Time (s)")
+    # ax1.set_ylabel("Energy (j)")
+    # ax1.plot(x, ke, label="Kinetic Energy", linestyle="--")
+    # ax1.plot(x, pe, label="Potential Energy", linestyle="--")
+    # ax1.plot(x, te, label="Total Energy", linestyle="--")
+    # ax1.tick_params(axis="y")
+    # ax1.legend(loc="upper left")
+    # ax2 = ax1.twinx()
+    # ax2.set_ylabel("Angular Values")
+    # ax2.plot(x, theta, label="Theta")
+    # ax2.plot(x, d_theta, label="d Theta")
+    # ax2.plot(x, d2_theta, label="d2 Theta")
+    # ax2.tick_params(axis="y")
+    # ax2.legend(loc="upper right")
+    # plt.title("Combined Pendulum Graph")
+    # fig.tight_layout()
+    # plt.show()
     
 
 if __name__ == "__main__":
