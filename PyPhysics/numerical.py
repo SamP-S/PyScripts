@@ -1,20 +1,22 @@
-from random import randint
+# support functions
 
-def randneg(a):
-    r = randint(0, 1)
-    if r == 1:
-        return a
-    else:
-        return -a
-
-def positive(a):
+def pos(a):
     if a >= 0:
         return a
     else:
         return -a
 
-def negative(a):
+def neg(a):
     if a <= 0:
         return a
     else:
         return -a
+    
+# numerical methods for ordinary differential equations
+def euler():
+    pass
+
+def midpoint():
+    pass
+
+# numerical methods for partial differential equations
