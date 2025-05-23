@@ -4,13 +4,6 @@ import numpy as np
 from copy import copy
 import matplotlib.pyplot as plt
 
-# pendulum
-l = 1
-m = 1
-ox = 4
-oy = 4
-theta_0 = pi / 2
-
 # DRAWING
 COLOURS = {
     "background": pg.Color(0, 0, 0),
@@ -25,15 +18,20 @@ M_PIXEL_SCALE = 100
 WIDTH = 800
 HEIGHT = 600
 # PHYSICS
-G = 10
-STEPS_PER_SECOND = 500
+G = 9.81
+STEPS_PER_SECOND = 100
 TIMESTEPS = STEPS_PER_SECOND * 5
+
+# pendulum
+l = 1
+m = 1
+ox = 4
+oy = 4
+theta_0 = pi / 4
 
 # formulas
 # i = m * l**2              # moment of inertia
 # tau = f * sin(theta) * l  # torque
-# T = 2 * pi * sqrt(l / g)  # time period using small angle approx || where theta < 10 degrees
-
 
 def energy(tn):
     # energy
@@ -49,70 +47,66 @@ def calc_step(dt, t0):
     d2_theta = -G * sin(theta) / l
     # print(f"theta: {theta:.2f};\t d theta: {d_theta:.2f};\t d2 theta: {d2_theta:.2f}")
     return (theta, d_theta, d2_theta)
-
-def sim():
-    print("pendulum sim")
-    dt = 1 / STEPS_PER_SECOND
-    t = np.zeros((TIMESTEPS, 3))
-    e = np.zeros((TIMESTEPS, 3))
-    x = np.arange(0.0, TIMESTEPS * dt, dt)
-    
-    # set first step
-    t[0][0] = theta_0
-    t[0][1] = 0.0
-    t[0][2] = -G * sin(theta_0) / l
-        
-    # calculate sequentially
-    for i in range(1, TIMESTEPS):
-        t[i] = calc_step(dt, t[i-1])
-    
-    # calculte energy at each time step
-    e = np.apply_along_axis(lambda tn: energy(tn), axis=1, arr=t)
-    return t, e, x
-    
     
 def main():    
-    # run pendulum simulation
-    t, e, x = sim()
+    # initalise
+    pg.init()
+    window = pg.display.set_mode((WIDTH, HEIGHT))
+    pg.display.set_caption("Double Pendulum")
+    clock = pg.time.Clock()
+    
+    t = []
+    e = []
+    x = []
 
-    # visualise
-    if False:
-        pg.init()
-        window = pg.display.set_mode((WIDTH, HEIGHT))
-        pg.display.set_caption("Single Pendulum")
-        clock = pg.time.Clock()
+    print("initial")
+    x.append(0.0)
+    t0 = (theta_0, 0.0, -G * sin(theta_0) / l)
+    e0 = energy(t0)
+    t.append(t0)
+    e.append(e0)
+    
+    # main loop
+    print("loop")
+    quit_flag = False
+    i = 0
+    while quit_flag == False and i < TIMESTEPS:
+        dt = clock.tick(STEPS_PER_SECOND) / 1000
         
-        # main loop
-        print("loop")
-        quit_flag = False
-        for i in range(len(x)):
-            dt = clock.tick(STEPS_PER_SECOND) / 1000
-            
-            # handle events
-            for evt in pg.event.get():
-                if evt.type == pg.QUIT:
-                    break
-            
-            # graphical coordinates
-            gox = ox * M_PIXEL_SCALE
-            goy = HEIGHT - oy * M_PIXEL_SCALE
-            x1 = (ox + l * sin(t[i][0])) * M_PIXEL_SCALE
-            y1 = HEIGHT - (oy - l * cos(t[i][0])) * M_PIXEL_SCALE
-            
-            # draw commands
-            window.fill(COLOURS["background"])
-            pg.draw.line(window, COLOURS["secondary"], (gox, goy), (x1, y1), LIMB_WIDTH)
-            pg.draw.circle(window, COLOURS["primary"], (gox, goy), JOINT_RADIUS)
-            pg.draw.circle(window, COLOURS["primary"], (x1, y1), JOINT_RADIUS)
+        # handle events
+        for evt in pg.event.get():
+            if evt.type == pg.QUIT:
+                quit_flag = True
 
-            # swap display buffers
-            pg.display.update()
+        # calculate
+        tn = calc_step(dt, t0)
+        en = energy(tn)
+        
+        # graphical coordinates
+        gox = ox * M_PIXEL_SCALE
+        goy = HEIGHT - oy * M_PIXEL_SCALE
+        x1 = (ox + l * sin(tn[0])) * M_PIXEL_SCALE
+        y1 = HEIGHT - (oy - l * cos(tn[0])) * M_PIXEL_SCALE
+        
+        # draw commands
+        window.fill(COLOURS["background"])
+        pg.draw.line(window, COLOURS["secondary"], (gox, goy), (x1, y1), LIMB_WIDTH)
+        pg.draw.circle(window, COLOURS["primary"], (gox, goy), JOINT_RADIUS)
+        pg.draw.circle(window, COLOURS["primary"], (x1, y1), JOINT_RADIUS)
 
-        # cleanup resources
-        pg.quit()
+        # swap display buffers
+        pg.display.update()
+        x.append(pg.time.get_ticks() / 1000)
+        t.append(tn)
+        e.append(en)
+        t0 = tn
+        i += 1
+
+    # cleanup resources
+    pg.quit()
     
     def print_stats(name, series):
-        print(f"{name}: min={np.min(series):.3f};\t avg={np.mean(series):.5f};\t max={np.max(series):.3f}")
+        print(f"{name}: min={np.min(series):.2f};\t avg={np.mean(series):.2f};\t max={np.max(series)}")
     
     # numpy the data
     theta, d_theta, d2_theta = np.array(t).T
@@ -122,14 +116,14 @@ def main():
     print_stats("te", te)
     
     # energy graph
-    # plt.plot(x, ke, label="Kinetic Energy")
-    # plt.plot(x, pe, label="Potential Energy")
-    # plt.plot(x, te, label="Total Energy")
-    # plt.xlabel("Time (s)")
-    # plt.ylabel("Energy (j)")
-    # plt.title("Pendulum Energy")
-    # plt.legend()
-    # plt.show()
+    plt.plot(x, ke, label="Kinetic Energy")
+    plt.plot(x, pe, label="Potential Energy")
+    plt.plot(x, te, label="Total Energy")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Energy (j)")
+    plt.title("Pendulum Energy")
+    plt.legend()
+    plt.show()
     
     # angular graph
     # plt.plot(x, theta, label="Theta")
